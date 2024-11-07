@@ -1,0 +1,269 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 #include <stdio.h>\
+#include <stdlib.h>\
+#include <string.h>\
+#include <time.h>\
+\
+#define MAX_UTILISATEUR 100\
+#define MAX_NOM_LONGEUR 50\
+#define MAX_SCORES 10\
+#define MAX_CATEGORIES 3\
+\
+typedef struct \{\
+    char nomUtilisateur[MAX_NOM_LONGEUR];\
+    int score;\
+\} Utilisateur;\
+\
+typedef struct \{\
+    char nom[100];\
+    char categorie[100];\
+\} Mot;\
+\
+typedef struct \{\
+    char nom[100];\
+    int selectionnee;\
+\} Categorie;\
+\
+Utilisateur utilisateurs[MAX_UTILISATEUR];\
+int nbUtilisateurs = 0;\
+\
+Categorie categories[MAX_CATEGORIES] = \{\
+    \{"Pays", 0\},\
+    \{"Logos", 0\},\
+    \{"Animaux", 0\}\
+\};\
+\
+void ajouterUtilisateur(const char* nomUtilisateur) \{\
+    if (nbUtilisateurs < MAX_UTILISATEUR) \{\
+        strncpy(utilisateurs[nbUtilisateurs].nomUtilisateur, nomUtilisateur, MAX_NOM_LONGEUR - 1);\
+        utilisateurs[nbUtilisateurs].nomUtilisateur[MAX_NOM_LONGEUR - 1] = '\\0';\
+        utilisateurs[nbUtilisateurs].score = 0;\
+        nbUtilisateurs++;\
+        printf("Utilisateur ajout\'e9 avec succ\'e8s.\\n");\
+    \} else \{\
+        printf("Nombre maximum d'utilisateurs atteint.\\n");\
+    \}\
+\}\
+\
+int trouverUtilisateur(const char* nomUtilisateur) \{\
+    for (int i = 0; i < nbUtilisateurs; i++) \{\
+        if (strcmp(utilisateurs[i].nomUtilisateur, nomUtilisateur) == 0) \{\
+            return i;  // Retourne l'indice de l'utilisateur\
+        \}\
+    \}\
+    return -1;  // -1 indique que l'utilisateur est introuvable\
+\}\
+\
+void afficherScores() \{\
+    if (nbUtilisateurs == 0) \{\
+        printf("Aucun utilisateur trouv\'e9.\\n");\
+        return;\
+    \}\
+\
+    for (int i = 0; i < nbUtilisateurs - 1; i++) \{\
+        for (int j = 0; j < nbUtilisateurs - i - 1; j++) \{\
+            if (utilisateurs[j].score < utilisateurs[j + 1].score) \{\
+                Utilisateur temp = utilisateurs[j];\
+                utilisateurs[j] = utilisateurs[j + 1];\
+                utilisateurs[j + 1] = temp;\
+            \}\
+        \}\
+    \}\
+\
+    printf("Scores :\\n");\
+    for (int i = 0; i < nbUtilisateurs; i++) \{\
+        printf("%s : %d\\n", utilisateurs[i].nomUtilisateur, utilisateurs[i].score);\
+    \}\
+\}\
+\
+void dessinerPendu(int tentatives) \{\
+    switch (tentatives) \{\
+        case 1:\
+            printf("|         O\\n");\
+            break;\
+        case 2:\
+            printf("|         O\\n");\
+            printf("|         |\\n");\
+            break;\
+        case 3:\
+            printf("|         O\\n");\
+            printf("|        /|\\n");\
+            break;\
+        case 4:\
+            printf("|         O\\n");\
+            printf("|        /|\\\\\\n");\
+            break;\
+        case 5:\
+            printf("|         O\\n");\
+            printf("|        /|\\\\\\n");\
+            printf("|        /\\n");\
+            break;\
+        case 6:\
+            printf("|         O\\n");\
+            printf("|        /|\\\\\\n");\
+            printf("|        / \\\\\\n");\
+            break;\
+        default:\
+            break;\
+    \}\
+\}\
+\
+void selectionnerCategories() \{\
+    printf("S\'e9lectionnez les cat\'e9gories :\\n");\
+    for (int i = 0; i < MAX_CATEGORIES; i++) \{\
+        printf("%d. %s (%s)\\n", i + 1, categories[i].nom, categories[i].selectionnee ? "S\'e9lectionn\'e9e" : "Non s\'e9lectionn\'e9e");\
+    \}\
+\
+    int choixCategorie;\
+    do \{\
+        printf("Entrez le num\'e9ro de la cat\'e9gorie \'e0 s\'e9lectionner/d\'e9s\'e9lectionner (0 pour terminer) : ");\
+        scanf("%d", &choixCategorie);\
+\
+        if (choixCategorie < 0 || choixCategorie > MAX_CATEGORIES) \{\
+            printf("Choix invalide. Veuillez r\'e9essayer.\\n");\
+        \} else if (choixCategorie > 0) \{\
+            categories[choixCategorie - 1].selectionnee = !categories[choixCategorie - 1].selectionnee;\
+        \}\
+    \} while (choixCategorie != 0);\
+\}\
+\
+int obtenirNbCategoriesSelectionnees() \{\
+    int nbCategoriesSelectionnees = 0;\
+    for (int i = 0; i < MAX_CATEGORIES; i++) \{\
+        if (categories[i].selectionnee) \{\
+            nbCategoriesSelectionnees++;\
+        \}\
+    \}\
+    return nbCategoriesSelectionnees;\
+\}\
+\
+void jouerPendu(const Mot* mots, int nbMots, Utilisateur* utilisateur) \{\
+    int nbCategoriesSelectionnees = obtenirNbCategoriesSelectionnees();\
+\
+    if (nbCategoriesSelectionnees == 0) \{\
+        printf("Aucune cat\'e9gorie s\'e9lectionn\'e9e. Veuillez s\'e9lectionner au moins une cat\'e9gorie.\\n");\
+        return;\
+    \}\
+\
+    int indexMotsSelectionnes[nbCategoriesSelectionnees];\
+    int indexCourant = 0;\
+    for (int i = 0; i < nbMots; i++) \{\
+        for (int j = 0; j < MAX_CATEGORIES; j++) \{\
+            if (categories[j].selectionnee && strcmp(mots[i].categorie, categories[j].nom) == 0) \{\
+                indexMotsSelectionnes[indexCourant++] = i;\
+                break;\
+            \}\
+        \}\
+    \}\
+\
+    int indexAleatoire = indexMotsSelectionnes[rand() % nbCategoriesSelectionnees];\
+    const Mot mot = mots[indexAleatoire];\
+\
+    int longueurMot = strlen(mot.nom);\
+    char motDevine[longueurMot + 1];\
+    memset(motDevine, '_', longueurMot);\
+    motDevine[longueurMot] = '\\0';\
+\
+    int tentatives = 0;\
+    int nbTentativesMax = 6;\
+    int devinettesCorrectes = 0;\
+\
+    printf("Cat\'e9gorie : %s\\n", mot.categorie);\
+    printf("Mot \'e0 deviner : %s\\n", motDevine);\
+\
+    while (tentatives < nbTentativesMax && devinettesCorrectes < longueurMot) \{\
+        char devinette;\
+        printf("Entrez une lettre : ");\
+        scanf(" %c", &devinette);\
+\
+        int trouve = 0;\
+        for (int i = 0; i < longueurMot; i++) \{\
+            if (mot.nom[i] == devinette && motDevine[i] == '_') \{\
+                motDevine[i] = devinette;\
+                devinettesCorrectes++;\
+                trouve = 1;\
+            \}\
+        \}\
+\
+        if (trouve) \{\
+            printf("Bonne devinette !\\n");\
+        \} else \{\
+            tentatives++;\
+            printf("Mauvaise devinette !\\n");\
+            dessinerPendu(tentatives);\
+        \}\
+\
+        printf("Mot \'e0 deviner : %s\\n", motDevine);\
+    \}\
+\
+    if (devinettesCorrectes == longueurMot) \{\
+        printf("F\'e9licitations, vous avez trouv\'e9 le mot !\\n");\
+        utilisateur->score++;\
+    \} else \{\
+        printf("Dommage, le mot \'e9tait : %s\\n", mot.nom);\
+    \}\
+\}\
+\
+int main() \{\
+    int choix;\
+    char nomUtilisateur[MAX_NOM_LONGEUR];\
+\
+    Mot mots[] = \{\
+        \{"france", "Pays"\},\
+        \{"espagne", "Pays"\},\
+        \{"italie", "Pays"\},\
+        \{"apple", "Logos"\},\
+        \{"nike", "Logos"\},\
+        \{"lion", "Animaux"\},\
+        \{"elephant", "Animaux"\}\
+    \};\
+    int nbMots = sizeof(mots) / sizeof(mots[0]);\
+\
+    srand(time(NULL));\
+\
+    do \{\
+        printf("1. Ajouter un utilisateur\\n");\
+        printf("2. Jouer au Pendu\\n");\
+        printf("3. Afficher les scores\\n");\
+        printf("0. Quitter\\n");\
+        printf("Votre choix : ");\
+        scanf("%d", &choix);\
+\
+        switch (choix) \{\
+            case 1:\
+                printf("Entrez le nom de l'utilisateur : ");\
+                scanf("%49s", nomUtilisateur);\
+                ajouterUtilisateur(nomUtilisateur);\
+                break;\
+            case 2:\
+                printf("Entrez votre nom d'utilisateur : ");\
+                scanf("%49s", nomUtilisateur);\
+                int indexUtilisateur = trouverUtilisateur(nomUtilisateur);\
+                if (indexUtilisateur == -1) \{\
+                    printf("Utilisateur introuvable.\\n");\
+                \} else \{\
+                    selectionnerCategories();\
+                    jouerPendu(mots, nbMots, &utilisateurs[indexUtilisateur]);\
+                \}\
+                break;\
+            case 3:\
+                afficherScores();\
+                break;\
+            case 0:\
+                printf("Au revoir !\\n");\
+                break;\
+            default:\
+                printf("Choix invalide.\\n");\
+                break;\
+        \}\
+    \} while (choix != 0);\
+\
+    return 0;\
+\}\
+}
